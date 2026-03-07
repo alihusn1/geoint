@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  /* Navy palette */
+  --color-navy-50: #e6edf5;
+  --color-navy-100: #c0d0e5;
+  --color-navy-200: #96b0d3;
+  --color-navy-300: #6c90c1;
+  --color-navy-400: #4d78b3;
+  --color-navy-500: #2e60a5;
+  --color-navy-600: #29589d;
+  --color-navy-700: #224e93;
+  --color-navy-800: #1c4489;
+  --color-navy-900: #0a1929;
+  --color-navy-950: #060f1a;
+
+  /* Cyan accent */
+  --color-cyan-400: #00B4D8;
+  --color-cyan-500: #0096B4;
+  --color-cyan-600: #007A94;
+
+  /* Surface colors */
+  --color-surface-100: #1E293B;
+  --color-surface-200: #162032;
+  --color-surface-300: #0F172A;
+  --color-surface-400: #0C1B2A;
+
+  /* Alert colors */
+  --color-alert-red: #E63946;
+  --color-alert-orange: #F77F00;
+  --color-alert-yellow: #FCBF49;
+  --color-alert-green: #2A9D8F;
+
+  /* Fonts */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-navy-900);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-300);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-navy-600);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-navy-500);
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Ensure react-globe.gl tooltip doesn't block point clicks */
+.scene-tooltip {
+  pointer-events: none !important;
+}
+
+button,
+a,
+[role="button"],
+[onclick],
+input[type="checkbox"],
+input[type="radio"],
+select,
+summary {
+  cursor: pointer;
+}
