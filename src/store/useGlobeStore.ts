@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CameraPosition, SidebarTab, MilitaryBase, OSINTEvent } from '@/types'
+import type { CameraPosition, SidebarTab, MilitaryBase, OSINTEvent, AircraftState, SatellitePosition, VesselState } from '@/types'
 
 type LeftPanel = 'osint' | 'filter' | null
 
@@ -7,6 +7,9 @@ interface GlobeState {
   cameraPosition: CameraPosition
   selectedBase: MilitaryBase | null
   selectedEvent: OSINTEvent | null
+  selectedAircraft: AircraftState | null
+  selectedSatellite: SatellitePosition | null
+  selectedVessel: VesselState | null
   sidebarOpen: boolean
   sidebarTab: SidebarTab
   showEvents: boolean
@@ -18,6 +21,9 @@ interface GlobeState {
   setCameraPosition: (pos: CameraPosition) => void
   setSelectedBase: (base: MilitaryBase | null) => void
   setSelectedEvent: (event: OSINTEvent | null) => void
+  setSelectedAircraft: (aircraft: AircraftState | null) => void
+  setSelectedSatellite: (satellite: SatellitePosition | null) => void
+  setSelectedVessel: (vessel: VesselState | null) => void
   setSidebarOpen: (open: boolean) => void
   setSidebarTab: (tab: SidebarTab) => void
   setShowEvents: (show: boolean) => void
@@ -32,6 +38,9 @@ export const useGlobeStore = create<GlobeState>()((set) => ({
   cameraPosition: { lat: 30, lng: 69, altitude: 1.8 },
   selectedBase: null,
   selectedEvent: null,
+  selectedAircraft: null,
+  selectedSatellite: null,
+  selectedVessel: null,
   sidebarOpen: false,
   sidebarTab: 'base',
   showEvents: true,
@@ -43,6 +52,9 @@ export const useGlobeStore = create<GlobeState>()((set) => ({
   setCameraPosition: (cameraPosition) => set({ cameraPosition }),
   setSelectedBase: (selectedBase) => set({ selectedBase }),
   setSelectedEvent: (selectedEvent) => set({ selectedEvent }),
+  setSelectedAircraft: (selectedAircraft) => set({ selectedAircraft }),
+  setSelectedSatellite: (selectedSatellite) => set({ selectedSatellite }),
+  setSelectedVessel: (selectedVessel) => set({ selectedVessel }),
   setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
   setSidebarTab: (sidebarTab) => set({ sidebarTab }),
   setShowEvents: (showEvents) => set({ showEvents }),
@@ -51,5 +63,5 @@ export const useGlobeStore = create<GlobeState>()((set) => ({
   setMapLayer: (mapLayer) => set({ mapLayer }),
   setLeftPanel: (leftPanel) => set({ leftPanel }),
   closeSidebar: () =>
-    set({ sidebarOpen: false, selectedBase: null, selectedEvent: null }),
+    set({ sidebarOpen: false, selectedBase: null, selectedEvent: null, selectedAircraft: null, selectedSatellite: null, selectedVessel: null }),
 }))

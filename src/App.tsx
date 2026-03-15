@@ -9,6 +9,9 @@ import { SearchBar } from '@/components/Search/SearchBar'
 import { BaseDetail } from '@/components/Sidebar/BaseDetail'
 import { EventDetail } from '@/components/Sidebar/EventDetail'
 import { CountryProfile } from '@/components/Sidebar/CountryProfile'
+import { AircraftDetail } from '@/components/Sidebar/AircraftDetail'
+import { SatelliteDetail } from '@/components/Sidebar/SatelliteDetail'
+import { VesselDetail } from '@/components/Sidebar/VesselDetail'
 import { EventTimeline } from '@/components/Dashboard/EventTimeline'
 import { EventFeed } from '@/components/Dashboard/EventFeed'
 import { OSINTFeedPanel } from '@/components/Dashboard/OSINTFeedPanel'
@@ -46,6 +49,9 @@ function App() {
 
   const selectedBase = useGlobeStore((s) => s.selectedBase)
   const selectedEvent = useGlobeStore((s) => s.selectedEvent)
+  const selectedAircraft = useGlobeStore((s) => s.selectedAircraft)
+  const selectedSatellite = useGlobeStore((s) => s.selectedSatellite)
+  const selectedVessel = useGlobeStore((s) => s.selectedVessel)
   const sidebarTab = useGlobeStore((s) => s.sidebarTab)
 
   // Init: health check → fetch data
@@ -104,6 +110,15 @@ function App() {
     if (sidebarTab === 'country') {
       const code = selectedBase?.countryCode ?? selectedEvent?.countryCode
       if (code) return <CountryProfile countryCode={code} />
+    }
+    if (sidebarTab === 'aircraft' && selectedAircraft) {
+      return <AircraftDetail aircraft={selectedAircraft} />
+    }
+    if (sidebarTab === 'satellite' && selectedSatellite) {
+      return <SatelliteDetail satellite={selectedSatellite} />
+    }
+    if (sidebarTab === 'vessel' && selectedVessel) {
+      return <VesselDetail vessel={selectedVessel} />
     }
     return (
       <div className="space-y-3">
