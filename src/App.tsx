@@ -6,20 +6,24 @@ import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { GlobeView } from '@/components/Globe/GlobeView'
 import { FilterPanel } from '@/components/Filters/FilterPanel'
 import { SearchBar } from '@/components/Search/SearchBar'
-import { BaseDetail } from '@/components/Sidebar/BaseDetail'
 import { EventDetail } from '@/components/Sidebar/EventDetail'
-import { CountryProfile } from '@/components/Sidebar/CountryProfile'
 import { AircraftDetail } from '@/components/Sidebar/AircraftDetail'
 import { SatelliteDetail } from '@/components/Sidebar/SatelliteDetail'
 import { VesselDetail } from '@/components/Sidebar/VesselDetail'
+import { ImageryPanel } from '@/components/Sidebar/ImageryPanel'
+import { StrategicDetail } from '@/components/Sidebar/StrategicDetail'
+import { StrategicTable } from '@/components/Sidebar/StrategicTable'
 import { EventTimeline } from '@/components/Dashboard/EventTimeline'
 import { EventFeed } from '@/components/Dashboard/EventFeed'
 import { OSINTFeedPanel } from '@/components/Dashboard/OSINTFeedPanel'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { GlobeLoader } from '@/components/ui/GlobeLoader'
+import { ConnectorLine } from '@/components/Globe/ConnectorLine'
 import { useDataStore } from '@/store/useDataStore'
 import { useFilterStore } from '@/store/useFilterStore'
 import { useGlobeStore } from '@/store/useGlobeStore'
+import { useStrategicLayerStore } from '@/store/useStrategicLayerStore'
+import * as strategicLayerService from '@/services/strategicLayerService'
 
 // Build filter params from filter store state for API calls
 function buildBaseFilters(f: ReturnType<typeof useFilterStore.getState>) {
@@ -52,7 +56,9 @@ function App() {
   const selectedAircraft = useGlobeStore((s) => s.selectedAircraft)
   const selectedSatellite = useGlobeStore((s) => s.selectedSatellite)
   const selectedVessel = useGlobeStore((s) => s.selectedVessel)
+  const selectedStrategicFeature = useGlobeStore((s) => s.selectedStrategicFeature)
   const sidebarTab = useGlobeStore((s) => s.sidebarTab)
+  const activeCSVLayer = useStrategicLayerStore((s) => s.activeCSVLayer)
 
   // Init: health check → fetch data
   useEffect(() => {
@@ -60,6 +66,14 @@ function App() {
     ;(async () => {
       await checkHealth()
       if (cancelled) return
+      // Fetch strategic layer GeoJSON in parallel with other data
+      const strategicStore = useStrategicLayerStore.getState()
+      strategicStore.setLoading(true)
+      strategicLayerService.getAllGeoJSON()
+        .then((data) => strategicStore.setGeojsonData(data))
+        .catch(() => strategicStore.setError('Failed to load strategic layers'))
+        .finally(() => strategicStore.setLoading(false))
+
       await Promise.all([fetchBases(), fetchEvents(), fetchStats(), fetchCountries()])
       if (!cancelled) setInitializing(false)
     })()
@@ -101,15 +115,12 @@ function App() {
   }, [mode, fetchEvents, fetchStats])
 
   const sidebarContent = () => {
-    if (sidebarTab === 'base' && selectedBase) {
-      return <BaseDetail base={selectedBase} />
+    if (sidebarTab === 'strategic') {
+      if (activeCSVLayer) return <StrategicTable />
+      if (selectedStrategicFeature) return <StrategicDetail feature={selectedStrategicFeature} />
     }
     if (sidebarTab === 'event' && selectedEvent) {
       return <EventDetail event={selectedEvent} />
-    }
-    if (sidebarTab === 'country') {
-      const code = selectedBase?.countryCode ?? selectedEvent?.countryCode
-      if (code) return <CountryProfile countryCode={code} />
     }
     if (sidebarTab === 'aircraft' && selectedAircraft) {
       return <AircraftDetail aircraft={selectedAircraft} />
@@ -119,6 +130,11 @@ function App() {
     }
     if (sidebarTab === 'vessel' && selectedVessel) {
       return <VesselDetail vessel={selectedVessel} />
+    }
+    if (sidebarTab === 'imagery') {
+      const lat = selectedBase?.lat ?? selectedEvent?.lat ?? selectedAircraft?.lat ?? selectedVessel?.lat
+      const lon = selectedBase?.lng ?? selectedEvent?.lng ?? selectedAircraft?.lng ?? selectedVessel?.lng
+      return <ImageryPanel initialLat={lat} initialLon={lon} />
     }
     return (
       <div className="space-y-3">
@@ -143,6 +159,7 @@ function App() {
         <ErrorBoundary>
           <Sidebar>{sidebarContent()}</Sidebar>
         </ErrorBoundary>
+        <ConnectorLine />
       </div>
     </div>
   )

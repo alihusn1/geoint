@@ -17,6 +17,10 @@ export function VesselDetail({ vessel }: { vessel: VesselState }) {
         <InfoItem label="Latitude" value={`${vessel.lat.toFixed(4)}°`} />
         <InfoItem label="Longitude" value={`${vessel.lng.toFixed(4)}°`} />
         <InfoItem label="Destination" value={vessel.destination ?? 'Unknown'} />
+        {vessel.owner && <InfoItem label="Owner" value={vessel.owner} />}
+        {vessel.ownerCategory && <InfoItem label="Owner Category" value={vessel.ownerCategory} />}
+        {vessel.flagCountry && <InfoItem label="Flag Country" value={vessel.flagCountry} />}
+        {vessel.imo && <InfoItem label="IMO" value={vessel.imo} />}
       </div>
     </div>
   )

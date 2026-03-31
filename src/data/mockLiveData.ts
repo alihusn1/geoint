@@ -5,6 +5,7 @@ import type {
   VesselState,
   AirspaceRestriction,
   StrikeEvent,
+  FrontlineData,
 } from '@/types/live'
 import { getSatelliteColor } from '@/utils/liveColors'
 
@@ -36,6 +37,27 @@ export function generateMockAircraft(count = 50): AircraftState[] {
       category: cat,
     }
   })
+}
+
+// ── Mock FlightAware (20) ──
+const FA_CALLSIGNS = ['SWA', 'JBU', 'SKW', 'ENY', 'ASA', 'FFT', 'NKS', 'AAY', 'VRD', 'FDX']
+
+export function generateMockFlightaware(count = 20): AircraftState[] {
+  return Array.from({ length: count }, (_, i) => ({
+    icao24: `FA-${(0xb00000 + i).toString(16)}`,
+    callsign: `${FA_CALLSIGNS[i % FA_CALLSIGNS.length]}${200 + i}`,
+    originCountry: COUNTRIES[i % COUNTRIES.length],
+    lat: randomLat(),
+    lng: randomLng(),
+    altitude: randomBetween(6000, 12000),
+    velocity: randomBetween(180, 260),
+    heading: Math.random() * 360,
+    verticalRate: randomBetween(-3, 3),
+    onGround: false,
+    lastContact: Date.now() / 1000,
+    squawk: null,
+    category: 'commercial' as const,
+  }))
 }
 
 // ── Mock Satellites (20) ──
@@ -105,6 +127,32 @@ export function generateMockVessels(count = 30): VesselState[] {
       heading: Math.random() * 360,
       speed: randomBetween(5, 22),
       vesselType: VESSEL_TYPES[i % VESSEL_TYPES.length],
+      destination: 'Port Unknown',
+    }
+  })
+}
+
+// ── Mock MarineTraffic Vessels (25) ──
+const MT_VESSEL_NAMES = ['MSC Fantasia', 'OOCL Hong Kong', 'Stena Impero', 'Blue Marlin', 'Akademik Shokalskiy', 'NS Concord', 'Hai Yang Shi You', 'Nisshin Maru', 'RMS Queen Mary', 'USS Nimitz']
+const MT_VESSEL_TYPES: VesselState['vesselType'][] = ['cargo', 'cargo', 'tanker', 'cargo', 'passenger', 'tanker', 'fishing', 'fishing', 'passenger', 'military']
+
+export function generateMockMarineTraffic(count = 25): VesselState[] {
+  const areas = [
+    { lat: 34.0, lng: -6.0 },   // Strait of Gibraltar
+    { lat: 12.0, lng: 43.0 },   // Bab el-Mandeb
+    { lat: 51.0, lng: 1.5 },    // English Channel
+    { lat: -34.0, lng: 18.5 },  // Cape of Good Hope
+  ]
+  return Array.from({ length: count }, (_, i) => {
+    const area = areas[i % areas.length]
+    return {
+      mmsi: `${300000000 + i}`,
+      name: i < MT_VESSEL_NAMES.length ? MT_VESSEL_NAMES[i] : `MT-VESSEL-${i}`,
+      lat: area.lat + randomBetween(-3, 3),
+      lng: area.lng + randomBetween(-3, 3),
+      heading: Math.random() * 360,
+      speed: randomBetween(3, 20),
+      vesselType: MT_VESSEL_TYPES[i % MT_VESSEL_TYPES.length],
       destination: 'Port Unknown',
     }
   })
@@ -188,4 +236,9 @@ export function generateMockStrikes(): StrikeEvent[] {
     origin: s.origin ?? null,
     sources: ['mock-osint'],
   }))
+}
+
+// ── Mock Frontlines ──
+export function generateMockFrontlines(): FrontlineData[] {
+  return []
 }

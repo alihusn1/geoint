@@ -1,5 +1,6 @@
 import { Globe } from 'lucide-react'
 import { StatusIndicator } from './StatusIndicator'
+import { ReportDialog } from '../Report/ReportDialog'
 
 interface HeaderProps {
   searchBar?: React.ReactNode
@@ -19,6 +20,7 @@ export function Header({ searchBar }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        <ReportDialog />
         {searchBar}
         <StatusIndicator />
       </div>

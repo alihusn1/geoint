@@ -5,10 +5,12 @@ import type { LiveLayerName } from '@/types/live'
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/live`
 const MAX_BACKOFF = 30_000
 const BASE_BACKOFF = 1_000
+const MAX_RETRIES = 20
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null)
   const backoffRef = useRef(BASE_BACKOFF)
+  const retryCountRef = useRef(0)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [connected, setConnected] = useState(false)
   const [reconnecting, setReconnecting] = useState(false)
@@ -40,6 +42,7 @@ export function useWebSocket() {
       setConnected(true)
       setReconnecting(false)
       backoffRef.current = BASE_BACKOFF
+      retryCountRef.current = 0
       sendSubscription()
     }
 
@@ -54,6 +57,12 @@ export function useWebSocket() {
 
     ws.onclose = () => {
       setConnected(false)
+      retryCountRef.current += 1
+      if (retryCountRef.current > MAX_RETRIES) {
+        console.warn(`[WebSocket] Stopped reconnecting after ${MAX_RETRIES} attempts`)
+        setReconnecting(false)
+        return
+      }
       setReconnecting(true)
       const delay = Math.min(backoffRef.current, MAX_BACKOFF)
       backoffRef.current = delay * 2
@@ -83,5 +92,12 @@ export function useWebSocket() {
     sendSubscription()
   }, [sendSubscription])
 
-  return { connected, reconnecting, updateSubscriptions }
+  // Manual retry — resets counter and reconnects
+  const retry = useCallback(() => {
+    retryCountRef.current = 0
+    backoffRef.current = BASE_BACKOFF
+    connect()
+  }, [connect])
+
+  return { connected, reconnecting, updateSubscriptions, retry }
 }

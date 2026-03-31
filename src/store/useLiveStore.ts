@@ -7,6 +7,7 @@ import type {
   VesselState,
   AirspaceRestriction,
   StrikeEvent,
+  FrontlineData,
   LayerState,
 } from '@/types/live'
 
@@ -16,11 +17,14 @@ export const ALL_SAT_CATEGORIES: SatellitePosition['category'][] = [
 
 interface LiveLayers {
   aircraft: LayerState<AircraftState>
+  flightaware: LayerState<AircraftState>
   satellites: LayerState<SatellitePosition>
   gpsJamming: LayerState<JammingPoint>
   maritime: LayerState<VesselState>
+  marinetraffic: LayerState<VesselState>
   airspace: LayerState<AirspaceRestriction>
   strikes: LayerState<StrikeEvent>
+  frontlines: LayerState<FrontlineData>
 }
 
 function defaultLayer<T>(): LayerState<T> {
@@ -43,11 +47,14 @@ interface LiveState {
 export const useLiveStore = create<LiveState>()((set) => ({
   layers: {
     aircraft: defaultLayer<AircraftState>(),
+    flightaware: defaultLayer<AircraftState>(),
     satellites: defaultLayer<SatellitePosition>(),
     gpsJamming: defaultLayer<JammingPoint>(),
     maritime: defaultLayer<VesselState>(),
+    marinetraffic: defaultLayer<VesselState>(),
     airspace: defaultLayer<AirspaceRestriction>(),
     strikes: defaultLayer<StrikeEvent>(),
+    frontlines: defaultLayer<FrontlineData>(),
   },
   satelliteCategories: new Set<SatellitePosition['category']>(ALL_SAT_CATEGORIES),
 

@@ -1,4 +1,4 @@
-import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, GitBranch, Sun, Moon, Satellite, RefreshCw } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, GitBranch, Sun, Moon, Satellite, RefreshCw, Mountain } from 'lucide-react'
 import { useGlobeStore } from '@/store/useGlobeStore'
 
 interface GlobeControlsProps {
@@ -25,6 +25,8 @@ export function GlobeControls({ onZoomIn, onZoomOut, onReset }: GlobeControlsPro
   const setShowArcs = useGlobeStore((s) => s.setShowArcs)
   const setAutoRotate = useGlobeStore((s) => s.setAutoRotate)
   const setMapLayer = useGlobeStore((s) => s.setMapLayer)
+  const terrain3d = useGlobeStore((s) => s.terrain3d)
+  const setTerrain3d = useGlobeStore((s) => s.setTerrain3d)
 
   const btnClass =
     'w-9 h-9 flex items-center justify-center rounded bg-surface-300/80 backdrop-blur border border-navy-700 text-slate-300 hover:text-white hover:border-cyan-400/40 transition-colors'
@@ -66,6 +68,13 @@ export function GlobeControls({ onZoomIn, onZoomOut, onReset }: GlobeControlsPro
         title="Auto Rotate"
       >
         <RefreshCw size={16} className={autoRotate ? 'animate-spin' : ''} style={autoRotate ? { animationDuration: '3s' } : undefined} />
+      </button>
+      <button
+        onClick={() => setTerrain3d(!terrain3d)}
+        className={`${btnClass} ${terrain3d ? '!border-emerald-400/50 !text-emerald-400 bg-emerald-400/10' : ''}`}
+        title="3D Terrain"
+      >
+        <Mountain size={16} />
       </button>
 
       <div className="w-9 h-px bg-navy-700 my-1" />

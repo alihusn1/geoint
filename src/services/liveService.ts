@@ -28,3 +28,11 @@ export async function getMaritimeVessels(bbox: string) {
 export async function getAirspaceRestrictions(bbox: string) {
   return api.get('/airspace/restrictions', { params: { bbox }, timeout: 60_000 }) as any
 }
+
+export async function getFlightAwareLive() {
+  return api.get('/flightaware/live', { timeout: 60_000 }) as any
+}
+
+export async function getMarineTrafficLive() {
+  return api.get('/marinetraffic/live', { timeout: 60_000 }) as any
+}

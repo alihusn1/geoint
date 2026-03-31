@@ -1,4 +1,4 @@
-import { Shield, AlertTriangle, MapPin, Clock, Plane, Radar, Ship, Ban, Crosshair } from 'lucide-react'
+import { Shield, AlertTriangle, MapPin, Clock, Plane, Radar, Ship, Ban, Map, Anchor } from 'lucide-react'
 import { useFilteredData } from '@/hooks/useFilteredData'
 import { useDataStore } from '@/store/useDataStore'
 import { useLiveStore } from '@/store/useLiveStore'
@@ -9,11 +9,13 @@ import { SatelliteDropdown } from './SatelliteDropdown'
 import type { LiveLayerName } from '@/types/live'
 
 const LAYER_TOGGLES: { name: LiveLayerName; label: string; icon: typeof Plane }[] = [
-  { name: 'aircraft',   label: 'ADS-B',  icon: Plane },
-  { name: 'gpsJamming', label: 'JAM',    icon: Radar },
+  { name: 'aircraft',    label: 'ADS-B',  icon: Plane },
+  { name: 'flightaware', label: 'FA',     icon: Plane },
+  { name: 'gpsJamming',  label: 'JAM',    icon: Radar },
   { name: 'maritime',   label: 'AIS',    icon: Ship },
+  { name: 'marinetraffic', label: 'MT', icon: Anchor },
   { name: 'airspace',   label: 'NOTAM',  icon: Ban },
-  { name: 'strikes',    label: 'STRIKE', icon: Crosshair },
+  { name: 'frontlines', label: 'FRONT',  icon: Map },
 ]
 
 export function StatsBar() {
@@ -87,7 +89,7 @@ export function StatsBar() {
       <div className="w-px h-8 bg-navy-700 shrink-0" />
 
       {/* Live layer toggles */}
-      {LAYER_TOGGLES.slice(0, 1).map((lt) => (
+      {LAYER_TOGGLES.slice(0, 2).map((lt) => (
         <LayerToggle
           key={lt.name}
           icon={lt.icon}
@@ -100,7 +102,7 @@ export function StatsBar() {
         />
       ))}
       <SatelliteDropdown />
-      {LAYER_TOGGLES.slice(1).map((lt) => (
+      {LAYER_TOGGLES.slice(2).map((lt) => (
         <LayerToggle
           key={lt.name}
           icon={lt.icon}

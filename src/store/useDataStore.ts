@@ -82,10 +82,31 @@ export const useDataStore = create<DataState>()((set, get) => ({
     set({ loading: true, error: null })
     try {
       if (get().mode !== 'online') throw new Error('offline')
-      const res = await eventService.getEvents({ limit: 500, ...filters })
-      const events = mapEvents(res.events ?? res)
+      // Fetch from all sources in parallel so every source appears on the map
+      const sources = ['gdelt_enhanced', 'twitter', 'grok_search', 'trends', 'deep_analysis', 'firms', 'usgs', 'ioda', 'strike_watch']
+      const results = await Promise.allSettled(
+        sources.map((source) =>
+          eventService.getEvents({ source, limit: 100, ...filters }),
+        ),
+      )
+      const allEvents: ReturnType<typeof mapEvents> = []
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const res = result.value
+          allEvents.push(...mapEvents(res.events ?? res))
+        }
+      }
+      // Deduplicate by event id
+      const seen = new Set<string>()
+      const unique = allEvents.filter((e) => {
+        if (seen.has(e.id)) return false
+        seen.add(e.id)
+        return true
+      })
+      // Sort by timestamp descending, cap at 1000
+      unique.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       set({
-        events,
+        events: unique.slice(0, 1000),
         loading: false,
         lastUpdated: new Date().toISOString(),
       })

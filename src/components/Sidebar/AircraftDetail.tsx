@@ -27,6 +27,10 @@ export function AircraftDetail({ aircraft }: { aircraft: AircraftState }) {
         <InfoItem label="Vertical Rate" value={`${aircraft.verticalRate.toFixed(1)} m/s`} />
         <InfoItem label="Squawk" value={aircraft.squawk ?? '—'} />
         <InfoItem label="On Ground" value={aircraft.onGround ? 'Yes' : 'No'} />
+        {aircraft.registration && <InfoItem label="Registration" value={aircraft.registration} />}
+        {aircraft.operator && <InfoItem label="Operator" value={aircraft.operator} />}
+        {aircraft.aircraftType && <InfoItem label="Aircraft Type" value={aircraft.aircraftType} />}
+        {aircraft.operatorCategory && <InfoItem label="Operator Category" value={aircraft.operatorCategory} />}
       </div>
     </div>
   )

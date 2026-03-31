@@ -23,12 +23,16 @@ export function mapBase(raw: any): MilitaryBase {
 // Maps backend EventResponse → frontend OSINTEvent
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapEvent(raw: any): OSINTEvent {
+  // Fall back to source/target coords when main location is null
+  const lat = raw.latitude ?? raw.source_lat ?? raw.target_lat ?? null
+  const lng = raw.longitude ?? raw.source_lon ?? raw.target_lon ?? null
+
   return {
     id: raw.id,
     title: raw.title,
     description: raw.description ?? '',
-    lat: raw.latitude ?? 0,
-    lng: raw.longitude ?? 0,
+    lat: lat ?? 0,
+    lng: lng ?? 0,
     category: raw.category ?? 'military_movement',
     severity: raw.severity ?? 'low',
     source: raw.source ?? 'social',
@@ -39,12 +43,16 @@ export function mapEvent(raw: any): OSINTEvent {
     country: raw.country ?? '',
     countryCode: raw.country_code ?? '',
     // Source / target geo
+    sourceLocation: raw.source_location ?? null,
     sourceLat: raw.source_lat ?? null,
     sourceLng: raw.source_lon ?? null,
     sourceCountryCode: raw.source_country_code ?? null,
+    targetLocation: raw.target_location ?? null,
     targetLat: raw.target_lat ?? null,
     targetLng: raw.target_lon ?? null,
     targetCountryCode: raw.target_country_code ?? null,
+    // Enriched metadata
+    metadata: raw.metadata_json ?? null,
   }
 }
 
@@ -54,7 +62,7 @@ export function mapBases(raw: unknown[]): MilitaryBase[] {
 }
 
 export function mapEvents(raw: unknown[]): OSINTEvent[] {
-  return raw.map(mapEvent)
+  return raw.map(mapEvent).filter((e) => e.lat !== 0 || e.lng !== 0)
 }
 
 // Derive region from country code when backend doesn't provide it

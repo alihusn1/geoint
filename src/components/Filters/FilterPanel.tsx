@@ -1,10 +1,13 @@
-import { Filter, RotateCcw, ChevronLeft, ChevronRight, Globe, Shield, GitBranch, Calendar } from 'lucide-react'
+import { useState } from 'react'
+import { Filter, RotateCcw, ChevronLeft, ChevronRight, Globe, Shield, GitBranch, Calendar, Layers, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useFilterStore, selectActiveFilterCount } from '@/store/useFilterStore'
 import { useGlobeStore } from '@/store/useGlobeStore'
+import { useStrategicLayerStore } from '@/store/useStrategicLayerStore'
 import { CountryFilter } from './CountryFilter'
 import { BaseTypeFilter } from './BaseTypeFilter'
 import { BranchFilter } from './BranchFilter'
 import { DateRangeFilter } from './DateRangeFilter'
+import { StrategicLayerPanel } from './StrategicLayerPanel'
 
 const FILTER_SECTIONS = [
   { icon: Globe, label: 'Ctry' },
@@ -20,12 +23,21 @@ export function FilterPanel() {
   const setLeftPanel = useGlobeStore((s) => s.setLeftPanel)
   const resetFilters = useFilterStore((s) => s.resetFilters)
   const filterCount = useFilterStore(selectActiveFilterCount)
+  const showEvents = useGlobeStore((s) => s.showEvents)
+  const setShowEvents = useGlobeStore((s) => s.setShowEvents)
+  const showBases = useGlobeStore((s) => s.showBases)
+  const setShowBases = useGlobeStore((s) => s.setShowBases)
+  const enabledStrategicCount = useStrategicLayerStore((s) => Object.values(s.enabledLayers).filter(Boolean).length)
+
+  const [activeTab, setActiveTab] = useState<'osm' | 'strategic'>('osm')
 
   const collapsed = leftPanel !== 'filter'
 
   const handleToggle = () => {
     setLeftPanel(collapsed ? 'filter' : null)
   }
+
+  const badgeCount = activeTab === 'osm' ? filterCount : enabledStrategicCount
 
   return (
     <>
@@ -47,10 +59,14 @@ export function FilterPanel() {
           <div className="flex flex-col items-center py-3 gap-3">
             {/* Filter icon with badge */}
             <div className="relative">
-              <Filter size={16} className="text-cyan-400" />
-              {filterCount > 0 && (
+              {activeTab === 'osm' ? (
+                <Filter size={16} className="text-cyan-400" />
+              ) : (
+                <Layers size={16} className="text-cyan-400" />
+              )}
+              {badgeCount > 0 && (
                 <span className="absolute -top-1.5 -right-2.5 w-4 h-4 rounded-full bg-alert-red text-white text-[9px] flex items-center justify-center font-bold">
-                  {filterCount}
+                  {badgeCount}
                 </span>
               )}
             </div>
@@ -60,14 +76,23 @@ export function FilterPanel() {
 
             {/* Category labels */}
             <div className="flex flex-col gap-2.5">
-              {FILTER_SECTIONS.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-0.5">
-                  <Icon size={12} className="text-slate-500" />
+              {activeTab === 'osm' ? (
+                FILTER_SECTIONS.map(({ icon: Icon, label }) => (
+                  <div key={label} className="flex flex-col items-center gap-0.5">
+                    <Icon size={12} className="text-slate-500" />
+                    <span className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
+                      {label}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center gap-0.5">
+                  <Layers size={12} className="text-slate-500" />
                   <span className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
-                    {label}
+                    Lyrs
                   </span>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Expand chevron */}
@@ -91,20 +116,57 @@ export function FilterPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-navy-700 shrink-0">
           <div className="flex items-center gap-2">
-            <Filter size={14} className="text-cyan-400" />
+            {activeTab === 'osm' ? (
+              <Filter size={14} className="text-cyan-400" />
+            ) : (
+              <Layers size={14} className="text-cyan-400" />
+            )}
             <h2 className="text-sm font-semibold text-white tracking-wide">
-              Filters
+              {activeTab === 'osm' ? 'OSM Filters' : 'Strategic Layers'}
             </h2>
           </div>
+          {activeTab === 'osm' && (
+            <button
+              onClick={resetFilters}
+              className="relative flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-surface-100 text-slate-300 hover:text-white transition-colors"
+            >
+              <RotateCcw size={12} />
+              Reset All
+              {filterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-alert-red text-white text-[10px] flex items-center justify-center">
+                  {filterCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Tab bar */}
+        <div className="flex border-b border-navy-700 shrink-0">
           <button
-            onClick={resetFilters}
-            className="relative flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-surface-100 text-slate-300 hover:text-white transition-colors"
+            onClick={() => setActiveTab('osm')}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-b-2 ${
+              activeTab === 'osm'
+                ? 'border-cyan-400 text-cyan-400'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
           >
-            <RotateCcw size={12} />
-            Reset All
-            {filterCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-alert-red text-white text-[10px] flex items-center justify-center">
-                {filterCount}
+            <Shield size={12} />
+            OSM Data
+          </button>
+          <button
+            onClick={() => setActiveTab('strategic')}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-b-2 ${
+              activeTab === 'strategic'
+                ? 'border-cyan-400 text-cyan-400'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers size={12} />
+            Strategic Layers
+            {enabledStrategicCount > 0 && (
+              <span className="ml-1 w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[9px] flex items-center justify-center font-bold">
+                {enabledStrategicCount}
               </span>
             )}
           </button>
@@ -112,37 +174,70 @@ export function FilterPanel() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-5">
-          {/* Country */}
-          <section>
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Country
-            </h3>
-            <CountryFilter />
-          </section>
+          {activeTab === 'osm' ? (
+            <>
+              {/* Visibility toggles */}
+              <section className="flex flex-col gap-2">
+                <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  Visibility
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300">Show Events</span>
+                  <button onClick={() => setShowEvents(!showEvents)}>
+                    {showEvents ? (
+                      <ToggleRight size={22} className="text-cyan-400" />
+                    ) : (
+                      <ToggleLeft size={22} className="text-slate-600" />
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300">Show Bases</span>
+                  <button onClick={() => setShowBases(!showBases)}>
+                    {showBases ? (
+                      <ToggleRight size={22} className="text-cyan-400" />
+                    ) : (
+                      <ToggleLeft size={22} className="text-slate-600" />
+                    )}
+                  </button>
+                </div>
+              </section>
 
-          {/* Base Type */}
-          <section>
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Base Type
-            </h3>
-            <BaseTypeFilter />
-          </section>
+              {/* Country */}
+              <section>
+                <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Country
+                </h3>
+                <CountryFilter />
+              </section>
 
-          {/* Branch */}
-          <section>
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Branch
-            </h3>
-            <BranchFilter />
-          </section>
+              {/* Base Type */}
+              <section>
+                <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Base Type
+                </h3>
+                <BaseTypeFilter />
+              </section>
 
-          {/* Date Range */}
-          <section>
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Date Range
-            </h3>
-            <DateRangeFilter />
-          </section>
+              {/* Branch */}
+              <section>
+                <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Branch
+                </h3>
+                <BranchFilter />
+              </section>
+
+              {/* Date Range */}
+              <section>
+                <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Date Range
+                </h3>
+                <DateRangeFilter />
+              </section>
+            </>
+          ) : (
+            <StrategicLayerPanel />
+          )}
         </div>
       </div>
     </>

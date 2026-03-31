@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 import { useDataStore } from '@/store/useDataStore'
 import { useFilterStore } from '@/store/useFilterStore'
+import { useGlobeStore } from '@/store/useGlobeStore'
 import type { MilitaryBase, OSINTEvent } from '@/types'
 
 export function useFilteredData() {
   const bases = useDataStore((s) => s.bases)
   const events = useDataStore((s) => s.events)
   const mode = useDataStore((s) => s.mode)
+  const eventSourceFilter = useGlobeStore((s) => s.eventSourceFilter)
   const {
     countries,
     baseTypes,
@@ -49,11 +51,18 @@ export function useFilteredData() {
   }, [bases, mode, countries, baseTypes, branches, status, searchQuery])
 
   const filteredEvents = useMemo(() => {
+    // Drop events with no valid coordinates (null island 0,0)
+    let result: OSINTEvent[] = events.filter((e) => e.lat !== 0 || e.lng !== 0)
+
+    // Source filter from OSINT panel (applies in both online and offline)
+    if (eventSourceFilter) {
+      result = result.filter((e) => e.source === eventSourceFilter)
+    }
+
     // When online, data arrives pre-filtered from API
-    if (mode === 'online') return events
+    if (mode === 'online') return result
 
     // Offline: client-side filtering
-    let result: OSINTEvent[] = events
 
     if (countries.length > 0) {
       result = result.filter((e) => countries.includes(e.countryCode))
@@ -77,7 +86,7 @@ export function useFilteredData() {
     }
 
     return result
-  }, [events, mode, countries, dateRange, searchQuery])
+  }, [events, mode, eventSourceFilter, countries, dateRange, searchQuery])
 
   const uniqueCountries = useMemo(() => {
     const codes = new Set(bases.map((b) => b.countryCode))

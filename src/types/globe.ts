@@ -4,4 +4,4 @@ export interface CameraPosition {
   altitude: number
 }
 
-export type SidebarTab = 'base' | 'event' | 'country' | 'aircraft' | 'satellite' | 'vessel'
+export type SidebarTab = 'base' | 'event' | 'country' | 'aircraft' | 'satellite' | 'vessel' | 'imagery' | 'strategic'

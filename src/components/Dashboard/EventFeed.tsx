@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useFilteredData } from '@/hooks/useFilteredData'
 import { useDataStore } from '@/store/useDataStore'
+import { useGlobeStore } from '@/store/useGlobeStore'
 import { useGlobeInteraction } from '@/hooks/useGlobeInteraction'
 import { relativeTime } from '@/utils/formatters'
 import { SEVERITY_COLORS } from '@/utils/colors'
@@ -11,10 +12,26 @@ import type { OSINTEvent } from '@/types'
 export function EventFeed() {
   const { filteredEvents } = useFilteredData()
   const mode = useDataStore((s) => s.mode)
+  const scrollToEventId = useGlobeStore((s) => s.scrollToEventId)
+  const selectedEvent = useGlobeStore((s) => s.selectedEvent)
   const { handleEventClick } = useGlobeInteraction()
   const [apiEvents, setApiEvents] = useState<OSINTEvent[] | null>(null)
   const [newCount, setNewCount] = useState(0)
   const prevIdsRef = useRef<Set<string>>(new Set())
+
+  // Auto-scroll to event when triggered from globe click
+  useEffect(() => {
+    if (!scrollToEventId) return
+    // Small delay so the DOM has rendered the list
+    const timer = setTimeout(() => {
+      const el = document.querySelector(`[data-event-id="${scrollToEventId}"]`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+      useGlobeStore.getState().setScrollToEventId(null)
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [scrollToEventId])
 
   // Fetch latest events from API when online
   useEffect(() => {
@@ -77,11 +94,15 @@ export function EventFeed() {
           sorted.map((event) => {
             const isRecent =
               Date.now() - new Date(event.timestamp).getTime() < 86_400_000
+            const isSelected = selectedEvent?.id === event.id
             return (
               <button
                 key={event.id}
-                onClick={() => handleEventClick(event)}
-                className="w-full text-left px-3 py-2.5 border-b border-navy-700/50 hover:bg-surface-100 transition-colors flex gap-2.5"
+                data-event-id={event.id}
+                onClick={() => handleEventClick(event, 'sidebar')}
+                className={`w-full text-left px-3 py-2.5 border-b border-navy-700/50 hover:bg-surface-100 transition-colors flex gap-2.5 ${
+                  isSelected ? 'bg-cyan-400/10 border-l-2 border-l-cyan-400' : ''
+                }`}
               >
                 <div className="mt-1.5 shrink-0 relative">
                   <span

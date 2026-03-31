@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Rss, ExternalLink } from 'lucide-react'
+import { Radio, ExternalLink } from 'lucide-react'
 import { useDataStore } from '@/store/useDataStore'
 import { mapEvents } from '@/services/mappers'
 import * as eventService from '@/services/eventService'
@@ -17,14 +17,14 @@ const SEVERITY_TAG: Record<string, { label: string; bg: string; text: string }> 
 export function NewsTicker() {
   const mode = useDataStore((s) => s.mode)
   const events = useDataStore((s) => s.events)
-  const [rssItems, setRssItems] = useState<OSINTEvent[]>([])
+  const [tickerItems, setTickerItems] = useState<OSINTEvent[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Fetch latest 10 RSS events
+  // Fetch latest 10 events from Grok Search (replaces RSS)
   useEffect(() => {
     if (mode !== 'online') {
       // Offline fallback: use first 10 events from store
-      setRssItems(
+      setTickerItems(
         [...events]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, 10),
@@ -34,15 +34,15 @@ export function NewsTicker() {
 
     let cancelled = false
     eventService
-      .getEvents({ source: 'rss', limit: 10 })
+      .getEvents({ source: 'grok_search', limit: 10 })
       .then((res: any) => {
         if (cancelled) return
         const mapped = mapEvents(res.events ?? res)
-        setRssItems(mapped)
+        setTickerItems(mapped)
       })
       .catch(() => {
         if (!cancelled) {
-          setRssItems(
+          setTickerItems(
             [...events]
               .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
               .slice(0, 10),
@@ -56,7 +56,7 @@ export function NewsTicker() {
   // Auto-scroll animation
   useEffect(() => {
     const el = scrollRef.current
-    if (!el || rssItems.length === 0) return
+    if (!el || tickerItems.length === 0) return
 
     let animId: number
     let pos = 0
@@ -83,18 +83,18 @@ export function NewsTicker() {
       el.removeEventListener('mouseenter', pause)
       el.removeEventListener('mouseleave', resume)
     }
-  }, [rssItems])
+  }, [tickerItems])
 
-  if (rssItems.length === 0) return null
+  if (tickerItems.length === 0) return null
 
   // Duplicate items for seamless scroll
-  const displayItems = [...rssItems, ...rssItems]
+  const displayItems = [...tickerItems, ...tickerItems]
 
   return (
     <div className="h-8 flex items-center bg-surface-400 border-b border-navy-700 shrink-0 overflow-hidden">
       <div className="flex items-center gap-1.5 px-3 shrink-0 border-r border-navy-700 h-full">
-        <Rss size={12} className="text-red-400" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">LIVE</span>
+        <Radio size={12} className="text-cyan-400" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">LIVE</span>
       </div>
       <div
         ref={scrollRef}

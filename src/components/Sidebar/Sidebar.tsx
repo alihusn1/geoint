@@ -1,4 +1,4 @@
-import { X, Shield, AlertTriangle, MapPin } from 'lucide-react'
+import { X, AlertTriangle, Image, Layers } from 'lucide-react'
 import { useGlobeStore } from '@/store/useGlobeStore'
 import type { SidebarTab } from '@/types'
 
@@ -6,10 +6,10 @@ interface SidebarProps {
   children?: React.ReactNode
 }
 
-const tabs: { id: SidebarTab; label: string; icon: typeof Shield }[] = [
-  { id: 'base', label: 'Base', icon: Shield },
+const tabs: { id: SidebarTab; label: string; icon: typeof AlertTriangle }[] = [
   { id: 'event', label: 'Event', icon: AlertTriangle },
-  { id: 'country', label: 'Country', icon: MapPin },
+  { id: 'imagery', label: 'Imagery', icon: Image },
+  { id: 'strategic', label: 'Layers', icon: Layers },
 ]
 
 export function Sidebar({ children }: SidebarProps) {
@@ -20,7 +20,7 @@ export function Sidebar({ children }: SidebarProps) {
 
   return (
     <div
-      className={`fixed right-0 z-40 bg-surface-300 border-l border-navy-700 flex flex-col transition-transform duration-300 ease-in-out ${
+      className={`fixed right-0 z-50 bg-surface-300 border-l border-navy-700 flex flex-col transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
       style={{ width: 380, top: 140, height: 'calc(100vh - 140px)' }}

@@ -17,9 +17,10 @@ export function createVesselElement(vessel: VesselState): HTMLDivElement {
   `
 
   const inner = document.createElement('div')
+  const hasEnrichment = !!vessel.ownerCategory
   inner.style.cssText = `
     color: ${color};
-    filter: drop-shadow(0 0 4px ${color}80);
+    filter: drop-shadow(0 0 4px ${color}80)${hasEnrichment ? ' drop-shadow(0 0 8px #FFD166)' : ''};
     transform: rotate(${vessel.heading}deg);
     transition: transform 1s linear;
     line-height: 0;
@@ -27,9 +28,31 @@ export function createVesselElement(vessel: VesselState): HTMLDivElement {
   inner.innerHTML = SHIP_SVG
 
   el.appendChild(inner)
-  el.title = `${vessel.name} (${vessel.mmsi})\n${vessel.vesselType}\nSpeed: ${vessel.speed.toFixed(1)}kn → ${vessel.destination ?? 'Unknown'}`
+  const titleParts = [`${vessel.name} (${vessel.mmsi})`]
+  if (vessel.owner) titleParts.push(`Owner: ${vessel.owner}`)
+  titleParts.push(vessel.vesselType)
+  titleParts.push(`Speed: ${vessel.speed.toFixed(1)}kn → ${vessel.destination ?? 'Unknown'}`)
+  el.title = titleParts.join('\n')
 
   ;(el as any).__data = { _markerType: 'vessel', ...vessel }
 
   return el
+}
+
+/** Update an existing vessel marker element in-place (avoids DOM teardown). */
+export function updateVesselElement(el: HTMLDivElement, vessel: VesselState): void {
+  const color = getVesselColor(vessel.vesselType)
+  const inner = el.firstElementChild as HTMLDivElement | null
+  const hasEnrichment = !!vessel.ownerCategory
+  if (inner) {
+    inner.style.color = color
+    inner.style.filter = `drop-shadow(0 0 4px ${color}80)${hasEnrichment ? ' drop-shadow(0 0 8px #FFD166)' : ''}`
+    inner.style.transform = `rotate(${vessel.heading}deg)`
+  }
+  const titleParts = [`${vessel.name} (${vessel.mmsi})`]
+  if (vessel.owner) titleParts.push(`Owner: ${vessel.owner}`)
+  titleParts.push(vessel.vesselType)
+  titleParts.push(`Speed: ${vessel.speed.toFixed(1)}kn → ${vessel.destination ?? 'Unknown'}`)
+  el.title = titleParts.join('\n')
+  ;(el as any).__data = { _markerType: 'vessel', ...vessel }
 }

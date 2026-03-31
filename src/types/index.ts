@@ -18,12 +18,19 @@ export type { FilterState } from './filters'
 export type { CameraPosition, SidebarTab } from './globe'
 
 export type {
+  StrategicLayerMeta,
+  StrategicFeatureData,
+  StrategicLayerCSVData,
+} from './strategicLayer'
+
+export type {
   AircraftState,
   SatellitePosition,
   JammingPoint,
   VesselState,
   AirspaceRestriction,
   StrikeEvent,
+  FrontlineData,
   LiveLayerName,
   LayerState,
 } from './live'
